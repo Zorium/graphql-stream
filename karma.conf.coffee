@@ -1,3 +1,6 @@
+_ = require 'lodash'
+webpack = require 'webpack'
+
 module.exports = (config) ->
   config.set
     singleRun: process.env.WATCH isnt '1'
@@ -30,6 +33,10 @@ module.exports = (config) ->
         ]
       resolve:
         extensions: ['.coffee', '.js']
+      plugins: [
+        new webpack.DefinePlugin
+          'process.env': _.mapValues process.env, JSON.stringify
+      ]
     webpackMiddleware:
       noInfo: true
       stats: 'errors-only'

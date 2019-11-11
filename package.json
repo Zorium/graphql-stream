@@ -1,14 +1,11 @@
 {
-  "name": "isomorphic-seed",
-  "version": "0.0.0",
-  "description": "Scaffolding for isomorphic coffeescript libraries",
+  "name": "graphql-stream",
+  "version": "0.0.1",
+  "description": "isomorphic GraphQL streaming client",
   "keywords": [
+    "graphql",
     "isomorphic",
-    "scaffolding",
-    "library",
-    "bootstrap",
-    "coffee",
-    "coffeescript"
+    "stream"
   ],
   "main": "src/index.coffee",
   "scripts": {
@@ -21,7 +18,13 @@
   },
   "license": "MIT",
   "author": "Zolmeister (https://zolmeister.com/)",
-  "dependencies": {},
+  "dependencies": {
+    "graphql": "^14.5.8",
+    "lodash": "^4.17.15",
+    "rxjs": "^5.2.0",
+    "socket.io-client": "^2.3.0",
+    "url-parse": "^1.4.7"
+  },
   "devDependencies": {
     "b-assert": "^0.1.2",
     "coffee-coverage": "^3.0.1",

@@ -7,6 +7,8 @@ if [ -z $COMMAND ]; then
   exit 1
 fi
 
+export MOCK=1
+
 case $COMMAND in
   report-coverage)
     istanbul report text
@@ -14,10 +16,10 @@ case $COMMAND in
     echo "file://$(pwd)/coverage/index.html"
   ;;
   test-server)
-    COFFEECOV_INIT_ALL=false mocha --timeout 300 --require coffeescript/register --require coffee-coverage/register-istanbul test/**/*.coffee
+    COFFEECOV_INIT_ALL=false mocha --timeout 300 --require coffeescript/register --require coffee-coverage/register-istanbul test/*.coffee
   ;;
   watch-server)
-    mocha -w --watch-extensions coffee --timeout 300 --require coffeescript/register test/**/*.coffee
+    mocha -w --watch-extensions coffee --timeout 300 --require coffeescript/register test/*.coffee
   ;;
   test-browser)
     ALL_BROWSERS=1 karma start
