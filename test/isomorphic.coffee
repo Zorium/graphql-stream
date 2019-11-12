@@ -1,7 +1,6 @@
 _ = require 'lodash'
 b = require 'b-assert'
 Rx = require 'rxjs/Rx'
-gqlParser = require 'graphql/language/parser'
 
 {api, nameGen, createClient} = require './util'
 
@@ -19,7 +18,7 @@ describe '__streamResult', ->
               id: 2
               name: 'nested'
           ]
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         name
@@ -51,7 +50,7 @@ describe '__streamResult', ->
         user:
           id: 1
           name: 'top-updated'
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           name
@@ -75,7 +74,7 @@ describe '__streamResult', ->
         user:
           id: 2
           name: 'nested-updated'
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           name
@@ -125,7 +124,7 @@ describe '__streamResult', ->
               ]
           }
         ]
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         name
@@ -170,7 +169,7 @@ describe '__streamResult', ->
         user:
           id: 2
           name: 'nested-updated'
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           name
@@ -187,7 +186,7 @@ describe '__streamResult', ->
         user:
           id: 3
           name: 'super-nested-updated'
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           name
@@ -233,7 +232,7 @@ describe '__streamResult', ->
         ref:
           id: 2
           arr: ['a']
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         ref {
@@ -249,7 +248,7 @@ describe '__streamResult', ->
         user:
           id: 2
           arr: []
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           arr
@@ -287,7 +286,7 @@ describe '__streamResult', ->
           ref:
             id: 3
         }]
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         edges {
@@ -313,7 +312,7 @@ describe '__streamResult', ->
             ref:
               id: 2
           }]
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           edges {
@@ -345,13 +344,13 @@ describe '__streamResult', ->
         user:
           id: 1
           edges: [{
-            name: 'b'
-            ref:
-              id: 2
-          }, {
             name: 'c'
             ref:
               id: 3
+          }, {
+            name: 'b'
+            ref:
+              id: 2
           }]
       }
 
@@ -363,7 +362,7 @@ describe '__streamResult', ->
         user:
           id: 2
           arr: ['a']
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       ref {
         user {
           id
@@ -379,7 +378,7 @@ describe '__streamResult', ->
         user:
           id: 2
           arr: []
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           arr
@@ -416,11 +415,11 @@ describe '__streamResult', ->
               id: 3
               name: 'c'
           }]
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         name
-        friends {
+        friends(limit: 1) {
           edges {
             id
             name
@@ -460,11 +459,11 @@ describe '__streamResult', ->
                 id: 3
                 name: 'y'
             }]
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           name
-          friends {
+          friends(limit: 1) {
             edges {
               id
               name
@@ -515,7 +514,7 @@ describe '__streamResult', ->
         id: 1
         sub:
           name: 'a'
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         sub {
@@ -537,7 +536,7 @@ describe '__streamResult', ->
           id: 1
           sub:
             name: 'z'
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           sub {
@@ -570,7 +569,7 @@ describe '__streamResult', ->
         id: 1
         sub:
           names: ['a']
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         sub {
@@ -592,7 +591,7 @@ describe '__streamResult', ->
           id: 1
           sub:
             names: ['z']
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           sub {
@@ -625,7 +624,7 @@ describe '__streamResult', ->
         id: 1
         sub:
           names: ['a']
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         sub {
@@ -647,7 +646,7 @@ describe '__streamResult', ->
           id: 1
           sub:
             names: []
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           sub {
@@ -683,7 +682,7 @@ describe '__streamResult', ->
           state: 'abc'
           deep:
             id: 3
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         transaction {
@@ -706,7 +705,7 @@ describe '__streamResult', ->
         user:
           id: 2
           state: 'xxx'
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           state
@@ -724,7 +723,7 @@ describe '__streamResult', ->
         user:
           id: 1
           name: 'a'
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       root {
         user {
           id
@@ -746,7 +745,7 @@ describe '__streamResult', ->
           user:
             id: 1
             name: 'z'
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         root {
           user {
             id
@@ -778,7 +777,7 @@ describe '__streamResult', ->
                 id: 2
                 name: 'a'
             ]
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       root {
         user {
           id
@@ -821,7 +820,7 @@ describe '__streamResult', ->
           friend:
             id: 2
             name: 'a'
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       root {
         user {
           id
@@ -852,7 +851,7 @@ describe '__streamResult', ->
     client.__streamResult {
       friends:
         edges: []
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       friends {
         edges
       }
@@ -867,7 +866,7 @@ describe '__streamResult', ->
   it 'handles null', ->
     client = createClient()
     streams = {}
-    client.__streamResult {user: null}, gqlParser.parse('query {
+    client.__streamResult {user: null}, client.__parseGQL('query {
       user {
         id
       }
@@ -889,7 +888,7 @@ describe '__streamResult', ->
         friendById:
           id: 2
           name: 'x'
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         name
@@ -944,7 +943,7 @@ describe '__streamResult', ->
               arrObj: [{j: 'a'}]
               friendById:
                 id: 4
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
           friendById(id: 3) {
@@ -1003,7 +1002,7 @@ describe '__streamResult', ->
         name: 'a'
         lastName: 'z'
         count: 2
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user {
         id
         name
@@ -1027,7 +1026,7 @@ describe '__streamResult', ->
           id: 1
           count: 3
         ]
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       root {
         a {
           id
@@ -1054,13 +1053,269 @@ describe '__streamResult', ->
           count: 3
       }
 
+  it 'merges array values only if AST matches', ->
+    client = createClient()
+    streams = {}
+    s1 = client.__streamResult {
+      user:
+        id: 1
+        arr: [{friendById: {id: 2}}]
+    }, client.__parseGQL('query {
+      user {
+        id
+        arr {
+          friendById(id: 2) {
+            id
+          }
+        }
+      }
+    }').definitions[0], streams
+
+    s1.take(1).toPromise()
+    .then (val) ->
+      client.__streamResult {
+        user:
+          id: 1
+          arr: [{friendById: {id: 3}}]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr {
+            friendById(id: 3) {
+              id
+            }
+          }
+        }
+      }').definitions[0], streams
+      .take(1).toPromise()
+    .then (val) ->
+      b val, {
+        user:
+          id: 1
+          arr: [{friendById: {id: 3}}]
+      }
+      s1.take(1).toPromise()
+    .then (val) ->
+      b val, {
+        user:
+          id: 1
+          arr: [{friendById: {id: 2}}]
+      }
+      s1 = client.__streamResult {
+        user:
+          id: 1
+          arr: [{__typename: 'User', name: 'a'}]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr {
+            __typename
+            ... on User {
+              name
+            }
+            ... on NonUser {
+              name
+            }
+          }
+        }
+      }').definitions[0], streams
+      s1.take(1).toPromise()
+    .then ->
+      client.__streamResult {
+        user:
+          id: 1
+          arr: [{__typename: 'NonUser', name: 'b'}]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr {
+            __typename
+            ... on User {
+              name
+            }
+            ... on NonUser {
+              name
+            }
+          }
+        }
+      }').definitions[0], streams
+      .take(1).toPromise()
+    .then ->
+      s1.take(1).toPromise()
+    .then (val) ->
+      b val, {
+        user:
+          id: 1
+          arr: [{__typename: 'NonUser', name: 'b'}]
+      }
+      client.__streamResult {
+        user:
+          id: 1
+          arr: [{__typename: 'User', name: 'b'}]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr {
+            __typename
+            name
+          }
+        }
+      }').definitions[0], streams
+      .take(1).toPromise()
+    .then ->
+      s1.take(1).toPromise()
+    .then (val) ->
+      b val, {
+        user:
+          id: 1
+          arr: [{__typename: 'User', name: 'b'}]
+      }
+      s1 = client.__streamResult {
+        user:
+          id: 1
+          arr: [{a: null}]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr {
+            a {
+              b
+            }
+          }
+        }
+      }').definitions[0], streams
+      s1.take(1).toPromise()
+    .then ->
+      client.__streamResult {
+        user:
+          id: 1
+          arr: [{a: {b: 'x'}}]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr {
+            a {
+              b
+            }
+          }
+        }
+      }').definitions[0], streams
+      .take(1).toPromise()
+    .then ->
+      s1.take(1).toPromise()
+    .then (val) ->
+      b val, {
+        user:
+          id: 1
+          arr: [{a: {b: 'x'}}]
+      }
+      client.__streamResult {
+        user:
+          id: 1
+          arr: [{a: null}]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr {
+            a {
+              b
+            }
+          }
+        }
+      }').definitions[0], streams
+      .take(1).toPromise()
+    .then ->
+      s1.take(1).toPromise()
+    .then (val) ->
+      b val, {
+        user:
+          id: 1
+          arr: [{a: null}]
+      }
+      s1 = client.__streamResult {
+        user:
+          id: 1
+          arr: [[1]]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr
+        }
+      }').definitions[0], streams
+      s1.take(1).toPromise()
+    .then ->
+      client.__streamResult {
+        user:
+          id: 1
+          arr: [[2]]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr
+        }
+      }').definitions[0], streams
+      .take(1).toPromise()
+    .then ->
+      s1.take(1).toPromise()
+    .then (val) ->
+      b val, {
+        user:
+          id: 1
+          arr: [[2]]
+      }
+      s1 = client.__streamResult {
+        user:
+          id: 1
+          arr: [[{name: 'a'}]]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr {
+            name
+          }
+        }
+      }').definitions[0], streams
+      s1.take(1).toPromise()
+    .then ->
+      client.__streamResult {
+        user:
+          id: 1
+          arr: [[{x: 'b'}]]
+      }, client.__parseGQL('query {
+        user {
+          id
+          arr {
+            x
+          }
+        }
+      }').definitions[0], streams
+      .take(1).toPromise()
+    .then ->
+      s1.take(1).toPromise()
+    .then (val) ->
+      b val, {
+        user:
+          id: 1
+          arr: [[{name: 'a'}]]
+      }
+
+  it 'handles empty result', ->
+    client = createClient()
+    streams = {}
+    await client.__streamResult {
+      user: [{}]
+    }, client.__parseGQL('query {
+      user
+    }').definitions[0], streams
+    .take(1).toPromise()
+
   it 'throws on mismatched ast', ->
     client = createClient()
     streams = {}
     try
       await client.__streamResult {
         a: 'x'
-      }, gqlParser.parse('query {
+      }, client.__parseGQL('query {
         user {
           id
         }
@@ -1076,7 +1331,7 @@ describe '__streamResult', ->
     s1 = client.__streamResult {
       user:
         id: 1
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user: viewer {
         id
       }
@@ -1095,7 +1350,7 @@ describe 'dealias', ->
       user:
         id: 1
         fullName: 'a'
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user: viewer {
         id
         fullName: name
@@ -1114,7 +1369,7 @@ describe 'dealias', ->
         id: 1
         fullName: 'a'
       ]
-    }], gqlParser.parse('query {
+    }], client.__parseGQL('query {
       user: viewer {
         id
         fullName: name
@@ -1127,6 +1382,23 @@ describe 'dealias', ->
       ]
     }]
 
+  it 'throws if AST mismatched', ->
+    client = createClient()
+    try
+      client.__dealias {
+        user:
+          id: 1
+          extraField: true
+      }, client.__parseGQL('query {
+        user: viewer {
+          id
+        }
+      }').definitions[0]
+      throw new Error 'Expected error'
+    catch err
+      b err.message,
+        'No GraphQL AST found for result: {"id":1,"extraField":true}'
+
 describe 'realias', ->
   it 'realiases', ->
     client = createClient()
@@ -1134,7 +1406,7 @@ describe 'realias', ->
       viewer:
         id: 1
         name: 'a'
-    }, gqlParser.parse('query {
+    }, client.__parseGQL('query {
       user: viewer {
         id
         fullName: name
@@ -1153,7 +1425,7 @@ describe 'realias', ->
         id: 1
         name: 'a'
       ]
-    }], gqlParser.parse('query {
+    }], client.__parseGQL('query {
       user: viewer {
         id
         fullName: name
@@ -1165,6 +1437,23 @@ describe 'realias', ->
         fullName: 'a'
       ]
     }]
+
+  it 'throws if AST mismatched', ->
+    client = createClient()
+    try
+      client.__realias {
+        viewer:
+          id: 1
+          name: 'a'
+      }, client.__parseGQL('query {
+        user: viewer {
+          id
+        }
+      }').definitions[0]
+      throw new Error 'Expected error'
+    catch err
+      b err.message,
+        'No GraphQL AST found for result: {"id":1,"name":"a"}'
 
 describe 'call', ->
   it 'fetches result, skipping cache', ->
@@ -1231,6 +1520,17 @@ describe 'call', ->
         stream.take(1).toPromise()
       .then ({user}) ->
         b user.name, 'blam'
+
+  it 'logs network errors', ->
+    callCount = 0
+    client = createClient
+      onStreamError: -> callCount += 1
+    try
+      await client.call 'throw'
+      throw new Error 'Expected error'
+    catch err
+      b err.message, 'Test Error'
+      b callCount, 1
 
 # TODO: support directives
 describe 'query', ->
@@ -1407,6 +1707,22 @@ describe 'query', ->
       queryStream.take(1).toPromise()
     .then (res) ->
       b res, 'xxx'
+
+  it 'throws on missing __typename with fragments', ->
+    called = 0
+    client = createClient({
+      onStreamError: (err) ->
+        called += 1
+        b err.message, 'Fragment support requires __typename'
+    })
+    try
+      await client.call(api.InvalidUserFrag, {id: 1})
+      throw new Error 'Expected error'
+    catch err
+      b err.message, 'Fragment support requires __typename'
+
+    await client.stream(api.InvalidUserFrag, {id: 1}).take(1).toPromise()
+    b called, 1
 
 describe 'invalidateAll', ->
   it 're-requests all active streams', ->

@@ -35,12 +35,14 @@ client.stream('''
   }
 ''').map ({user} = {}) -> user
 
-# subscribe(query, variables) -> RxObservable
+# subscribe(qs, query, variables) -> RxObservable
 # creates a websocket subscription
-# $sid is passed in by graphql-stream, and must be returned at the top level of all results
+# qs is the querystring for the socket.io url
+# this emits {sid, qs, query, variables} over the channel 'graphql'
+# responses should arrive on 'graphql' and be of the form {sid, errors, data}
 client.subscribe('''
-  subscription ($sid: String!) {
-    viewer(sid: $sid) {
+  subscription {
+    viewer {
       sid
       event
       node {

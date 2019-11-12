@@ -29,9 +29,9 @@ describe 'subscribe', ->
         b listener.channel, 'graphql'
 
         listener.callback({
+          sid: event.message.sid
           data: {
             viewer:
-              sid: event.message.variables.sid
               node: _.defaults({name: 'hatchet', __typename: 'User'}, user)
           }
         })
@@ -46,11 +46,9 @@ describe 'subscribe', ->
         b user.name, 'hatchet'
 
   it 'handles errors passively', ->
-    called = 0
+    callCount = 0
     client = createClient({
-      onStreamError: ->
-        called += 1
-        Promise.resolve null
+      onStreamError: -> callCount += 1
     })
     client.subscribe {token: 'xxx'}, api.subscribe
     .take(1).toPromise()
@@ -66,4 +64,31 @@ describe 'subscribe', ->
       .take(1).toPromise()
     .then (res) ->
       b res, undefined
-      b called, 1
+      b callCount, 1
+
+  it 'logs sid errors', ->
+    callCount = 0
+    client = createClient({
+      onStreamError: (err) ->
+        callCount += 1
+        b err.message, 'Missing handler for sid: abc'
+    })
+    client.subscribe {token: 'xxx'}, '''
+      subscription {
+        viewer {
+          id
+        }
+      }
+    '''
+    .take(1).toPromise()
+    .then ->
+      # XXX: other tests create listeners...
+      listener = _.last(SocketIO._listeners())
+      listener.callback({
+        sid: 'abc'
+        data: {
+          viewer:
+            id: 1
+        }
+      })
+      b callCount, 1

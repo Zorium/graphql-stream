@@ -5,10 +5,12 @@ gqlParser = require 'graphql/language/parser'
 
 if window?
   # XXX
-  SocketIO = if process.env.MOCK is '1'
-    require '../test/mock/socket.io-client'
-  else
-    require 'socket.io-client'
+  SocketIO =
+    # istanbul ignore else
+    if process.env.MOCK is '1'
+      require '../test/mock/socket.io-client'
+    else
+      require 'socket.io-client'
 
 inlineFragments = (ast, fragments) ->
   _.mapValues ast, (node) ->
@@ -20,7 +22,7 @@ inlineFragments = (ast, fragments) ->
 
     if node.kind is 'SelectionSet'
       hasTypename =
-        _.find(node.selections, ({name}) -> name.value is '__typename')?
+        _.find(node.selections, ({name}) -> name?.value is '__typename')?
 
       _.defaults {
         selections: _.map _.flatten(_.map node.selections, (selection) ->
@@ -71,6 +73,12 @@ hash = (str) ->
 isNode = (x) -> x?.id?
 
 isASTMatch = (obj, ast) ->
+  unless _.isObject obj
+    return true
+
+  if _.isArray obj
+    return _.every obj, (val) -> isASTMatch val, ast
+
   _.every ast.selectionSet?.selections, (selection) ->
     if selection.arguments.length > 0
       return false
@@ -185,6 +193,7 @@ streamResult = (result, ast, nodeStreams, initialize = true) ->
 
   (if isNode result
     node = _.cloneDeep result
+    # istanbul ignore if
     unless nodeStreams[node.id]?
       throw new Error "Uninitialized node: #{JSON.stringify node.id}"
     nodeStreams[node.id].map (updatedNode) ->
@@ -220,7 +229,10 @@ module.exports = class GraphQLClient
   constructor: ({@api, @fetch, cache, @socketUrl, @onStreamError}) ->
     @initialCache = cache or {}
     @cache = new Rx.BehaviorSubject cache or {}
-    @onStreamError ?= (err) -> console.error err
+
+    # istanbul ignore next
+    logger = (err) -> console.error err
+    @onStreamError ?= logger
 
     @queue = []
     @streams = {}
@@ -237,6 +249,7 @@ module.exports = class GraphQLClient
   __updateNodeStreams: updateNodeStreams
   __dealias: dealias
   __realias: realias
+  __parseGQL: parseGQL
 
   stream: (query, variables) =>
     request = {query, variables}
@@ -258,11 +271,6 @@ module.exports = class GraphQLClient
 
   invalidateAll: =>
     _.map @streams, ({request, write}, key) =>
-      # if the result is cached but hasn't been queried
-      unless request?
-        delete @streams[key]
-        return
-
       deferred = null
       write.next Rx.Observable.defer =>
         deferred or deferred = @_query(request).switch()
@@ -324,11 +332,19 @@ module.exports = class GraphQLClient
             # null breaks function default parameters, e.g. ({x} = {}) -> x
             subject.next Rx.Observable.of undefined
         else
-          ast = _.find parseGQL(request.query).definitions,
-            kind: 'OperationDefinition'
-          subject.next streamResult(
-            dealias(result.data, ast), ast, @nodeStreams
-          ).map (result) -> realias result, ast
+          try
+            ast = _.find parseGQL(request.query).definitions,
+              kind: 'OperationDefinition'
+            subject.next streamResult(
+              dealias(result.data, ast), ast, @nodeStreams
+            ).map (result) -> realias result, ast
+          catch err
+            if shouldError
+              subject.error err
+            else
+              @onStreamError err
+              # null breaks function default parameters, e.g. ({x} = {}) -> x
+              subject.next Rx.Observable.of undefined
     , (err) =>
       @onStreamError err
       _.map queue, ({subject, shouldError}) ->
@@ -349,35 +365,22 @@ module.exports = class GraphQLClient
 
     socketKey = hash qs
     unless @sockets[socketKey]?
-      ast = _.find parseGQL(query).definitions,
-        kind: 'OperationDefinition'
       parsedUrl = new URL @socketUrl, null, true
       @sockets[socketKey] = SocketIO parsedUrl.host,
         transports: ['websocket']
         query: qs
         path: parsedUrl.pathname + '/socket.io'
-      @sockets[socketKey].on 'graphql', ({errors, data}) =>
+      @sockets[socketKey].on 'graphql', ({sid, data, errors}) =>
         if errors?
           for {message} in errors
             @onStreamError message
           return
 
-        updateNodeStreams dealias(data, ast), @nodeStreams
-
-        sids = _.uniq _.map data, 'sid'
-
-        if sids.length > 1
-          @onStreamError new Error 'socket result conflicting sids'
-        else if sids.length < 1
-          @onStreamError new Error 'socket result missing sids'
-
-        sid = sids[0]
-
         if @socketStreams[sid]?
+          updateNodeStreams dealias(data, @socketStreams[sid].ast), @nodeStreams
           @socketStreams[sid].write.next Rx.Observable.of data
         else
-          @onStreamError new Error "missing handler for sid: #{sid}"
-
+          @onStreamError new Error "Missing handler for sid: #{sid}"
 
     sid = hash {qs, query, variables}
     unless @socketStreams[sid]?
@@ -385,12 +388,10 @@ module.exports = class GraphQLClient
       @socketStreams[sid] = readWriteStreamOf Rx.Observable.defer =>
         if deferred?
           return deferred
-        @sockets[socketKey].emit 'graphql', {
-          qs
-          query
-          variables: _.defaults {sid}, variables
-        }
+        @sockets[socketKey].emit 'graphql', {sid, qs, query, variables}
         # null breaks function default parameters, e.g. ({x} = {}) -> x
         deferred = new Rx.BehaviorSubject(undefined)
+      @socketStreams[sid].ast = _.find parseGQL(query).definitions,
+        kind: 'OperationDefinition'
 
     return @socketStreams[sid].read

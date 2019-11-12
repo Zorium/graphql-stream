@@ -36,3 +36,9 @@ describe 'cache', ->
           stream.take(1).toPromise()
         .then ({user}) ->
           b user.name, 'axe'
+
+describe 'subscribe', ->
+  it 'returns undefined server side', ->
+    client = createClient()
+    b undefined,
+      await client.subscribe({token: 'xxx'}, api.subscribe).take(1).toPromise()
