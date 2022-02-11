@@ -33,7 +33,7 @@
     "coffeescript": "^2.4.1",
     "istanbul": "^0.4.5",
     "istanbul-instrumenter-loader": "^3.0.1",
-    "karma": "^4.4.1",
+    "karma": "^6.3.14",
     "karma-chrome-launcher": "^3.1.0",
     "karma-coffee-preprocessor": "^1.0.1",
     "karma-coverage-istanbul-reporter": "^2.1.0",
